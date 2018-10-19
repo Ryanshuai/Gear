@@ -1,0 +1,32 @@
+post: &post
+  boxsize: {height: 192, width: 128}
+  points_exclude: [4, 5, 6, 7]
+  link_sequence: [[0, 1, 1, 2, 3, 4, 5, 6, 7],
+                  [1, 2, 3, 4, 5, 6, 7, 8, 9]]
+  background_index: [0]
+  heatmap_index: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+
+data:
+  dataloader:
+    train:
+      batch_size: 1
+      num_workers: 1
+      shuffle: true
+    valid:
+      batch_size: 1
+      num_workers: 4
+      shuffle: true
+    test:
+      batch_size: 1
+      num_workers: 4
+      shuffle: true
+
+  dataset:
+    defaults: &defaults
+      root: '++++++++++++++++++++++++++++++++++++++++++++++++++++++++'
+      image_size: '----------------------------------------------------'
+      enable_fourth_channel: '*******************************************'
+      keypoints_list: [0, 1, 2, 3, 8, 9, 10, 11, 12, 13]
+      keypoints_names: ['head', 'neck', 'right_shoulder', 'left_shoulder', 'right_hip', 'left_hip', 'right_knee',
+       'left_knee', 'right_ankle', 'left_ankle']
+      heatmap_stride: 2
