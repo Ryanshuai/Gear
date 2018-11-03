@@ -13,14 +13,15 @@ def input_parsing(inp):
     return d
 
 
-def dic2obj(d):
-    top = Cls()
+def dic2obj(d, gear_cls_tree_path):
+    cls = Cls()
+    cls.gear_cls_tree_path = gear_cls_tree_path
     for k, v in d.items():
         if isinstance(v, dict):
-            setattr(top, k, dic2obj(v))
+            setattr(cls, k, dic2obj(v, gear_cls_tree_path+'.'+k))
         else:
-            setattr(top, k, v)
-    return top
+            setattr(cls, k, v)
+    return cls
 
 
 def obj_eq(ob_0, ob_1, no_list=None):
@@ -78,7 +79,7 @@ def merge(a, b):
 
 class Cls:
     def __init__(self):
-        pass
+        self.gear_cls_tree_path = 'arg'
 
     def __eq__(self, other):
         return obj_eq(self, other)
@@ -92,6 +93,6 @@ class Cls:
 
 def get_Cls(default_file):
     d = input_parsing(default_file)
-    obj = dic2obj(d)
+    obj = dic2obj(d, 'arg')
     return obj
 

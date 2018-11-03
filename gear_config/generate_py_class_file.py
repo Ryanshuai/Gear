@@ -4,16 +4,15 @@ import re
 from yaml_to_object import get_Cls, Cls
 
 
-def write_down_obj(obj, tree_path:str, tab_num):
+def write_down_obj(obj, tab_num):
     attr_list = dir(obj)
     attr_list = list(filter(lambda x: not (x[:1] == '_' or callable(getattr(obj, x)) or x == ''), attr_list))
 
-    father_name = tree_path.split('.')[-1]
+    father_name = obj.gear_cls_tree_path.split('.')[-1]
 
     line = "{}class {}(Cls):".format(tab_num*'    ', father_name.upper()); lines.append(line)
     line = "{}def __init__(self):".format((tab_num+1)*'    ', father_name.upper()); lines.append(line)
     line = "{}    super().__init__()".format((tab_num+1)*'    '); lines.append(line)
-    line = "{}    self.cls_tree_path = '{}'".format((tab_num+1)*'    ', tree_path); lines.append(line)
 
     if tab_num == 0:
         line = 8*' '+"class STAMP(Cls):"; lines.append(line)
@@ -35,28 +34,6 @@ def write_down_obj(obj, tree_path:str, tab_num):
         else:
             build_in_list.append(attr)
 
-    # if 'save_root' in variable_list:
-    #     attr = 'save_root'
-    #     line = "{}self.{} = '{}'".format((tab_num + 2) * '    ', attr, getattr(obj, attr)); lines.append(line)
-    #     variable_list.remove('save_root')
-    #     line = "{}self.root = self.save_root+experiment_name".format((tab_num + 2) * '    '); lines.append(line)
-    #     if 'root' in variable_list:
-    #         variable_list.remove('root')
-    #
-    # if 'root' in variable_list:
-    #     attr = 'root'
-    #     line = "{}self.{} = '{}'".format((tab_num + 2) * '    ', attr, getattr(obj, attr)); lines.append(line)
-    #     variable_list.remove('root')
-
-    # for attr in variable_list:
-    #     if attr[0: 9] == 'relative_':
-    #         if obj.root is None and obj.save_root is None:
-    #             print("gear warning:{} don't have corresponding root".format(attr))
-    #         line = "{}self.{} = '{}'".format((tab_num + 2) * '    ', attr, getattr(obj, attr)); lines.append(line)
-    #         line = "{}self.{} = self.root + '{}'".format((tab_num + 2) * '    ', attr[9:], getattr(obj, attr)); lines.append(line)
-    #         variable_list = [ele for ele in variable_list if ele != attr]
-    #         variable_list = [ele for ele in variable_list if ele != attr[9:]]
-
     for attr in build_in_list:
         if isinstance(getattr(obj, attr), str):
             line = "{}self.{} = '{}'".format((tab_num+2)*'    ', attr, getattr(obj, attr)); lines.append(line)
@@ -64,7 +41,7 @@ def write_down_obj(obj, tree_path:str, tab_num):
             line = "{}self.{} = {}".format((tab_num+2)*'    ', attr, getattr(obj, attr)); lines.append(line)
 
     for attr in cls_list:
-        write_down_obj(getattr(obj, attr), tree_path+'.'+attr, tab_num=tab_num+2)
+        write_down_obj(getattr(obj, attr), tab_num=tab_num+2)
         line = "{}self.{} = {}()".format((tab_num+2)*'    ', attr, attr.upper()); lines.append(line)
 
     return lines
@@ -98,7 +75,6 @@ for yaml_file in yaml_wait_list:
     line = 'import sys'; lines.append(line)
     line = 'import time'; lines.append(line)
     line = 'import warnings'; lines.append(line)
-    line = 'from ..config_utils import user_list'; lines.append(line)
     line = 'from ..yaml_to_object import Cls'; lines.append(line)
     line = ''; lines.append(line)
     line = ''; lines.append(line)
@@ -116,7 +92,7 @@ for yaml_file in yaml_wait_list:
     line = ""; lines.append(line)
 
 
-    write_down_obj(arg, tree_path='arg', tab_num=0)
+    write_down_obj(arg, tab_num=0)
     # for line in lines:
     #     print(line)
 

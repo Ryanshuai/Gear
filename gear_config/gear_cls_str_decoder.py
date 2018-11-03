@@ -3,7 +3,7 @@ import time
 from gear_config.yaml_to_object import Cls
 
 
-def decode_str()
+def decode__str()
 
 
 gear_user_list = ['qxc', 'ysy', 'jh1', 'ys2', 'qty', 'zam', 'ca', 'xc']
@@ -28,3 +28,7 @@ gear_patter = re.compile('(?:%(?!arg)[_a-zA-Z]\w*)|(?:%arg(?:\\.[_a-zA-Z]\w*)+)|
 search = gear_patter.findall(test_str)
 for reg in search:
     print(reg)
+
+
+
+
