@@ -100,3 +100,5 @@ if __name__ == '__main__':
     for reg in search:
         print(reg)
 
+    a = eval("1==2")
+    print(a)
