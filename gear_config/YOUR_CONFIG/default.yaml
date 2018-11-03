@@ -1,3 +1,26 @@
+data_dir:
+save_dir:
+
+
+save:
+  gear_save_root: '/home/ys/Data/pose_estimate_save/'
+  root:
+  relative_model: join(%arg.save_root, 'models')
+  relative_train: 'train'
+  relative_valid: 'valid'
+  relative_analyze: 'valid/coco_analyze'
+  relative_tensorboard: 'tensorboard'
+  relative_test: 'tst'
+  model:
+  train:
+  valid:
+  analyze:
+  tensorboard:
+  test:
+
+
+
+
 post: &post
   boxsize: {height: 192, width: 128}
   points_exclude: [4, 5, 6, 7]
@@ -90,25 +113,6 @@ train:
   log_interval: 10
   save_model_interval: 1
   valid_interval: 1
-
-save:
-  gear_save_root: '/home/ys/Data/pose_estimate_save/'
-  root:
-  relative_model: 'models'
-  relative_train: 'train'
-  relative_valid: 'valid'
-  relative_analyze: 'valid/coco_analyze'
-  relative_tensorboard: 'tensorboard'
-  relative_test: 'tst'
-  model:
-  train:
-  valid:
-  analyze:
-  tensorboard:
-  test:
-
-device: 'cuda'
-device_ids: [0]
 
 tensorboard:
   enable: true
