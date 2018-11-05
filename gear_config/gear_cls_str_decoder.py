@@ -69,3 +69,13 @@ arg = get_Cls('YOUR_CONFIG/default.yaml')
 test3_str = base_decode_quote_str(arg, test3_str)
 print(test3_str)
 
+
+now_pos_str = 'a.b.c'
+relative_quote_str = '.d'
+
+def relative_quote_to_abs_quote(now_pos_str: str, relative_quote_str: str):
+    aaa = re.search('[_a-zA-Z]', relative_quote_str).regs[0][0]
+    point_num = relative_quote_str.count('.')
+    print()
+
+relative_quote_to_abs_quote(now_pos_str, relative_quote_str)
