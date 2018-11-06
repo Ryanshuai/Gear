@@ -4,81 +4,107 @@ import sys
 from os.path import dirname, join
 import time
 from copy import copy
-from gear_config.yaml_to_object import get_Cls, Cls
-
-
-# macros mode ==========================================================================================================
-macros_dict = dict()
-macros_dict['%time'] = "time.strftime('%Y_%m_%d_%H_%M_%S', time.localtime(time.time()))"
-macros_dict['%config_name'] = "os.path.basename(sys.argv[0])"
-macros_dict['%user'] = "????????"
-
-macros_dict['%project_dir'] = 'dirname(dirname(sys.argv[0]))'
-
-
-def base_decode_reserve_str(the_str: str):
-    for k, v in macros_dict.items():
-        the_str = re.sub(k, v, the_str)
-    return the_str
-
-
-# reserve mode =========================================================================================================
-reserve_pattern = re.compile('%(?!arg)[_a-zA-Z]\w*')
-
-quote_pattern_abs = re.compile('(?:%arg(?:\\.[_a-zA-Z]\w*)+)')
-quote_pattern_rel = re.compile('(?:%\\.+(?:\\.[_a-zA-Z]\w*)+)')
-quote_pattern = re.compile('(?:%arg(?:\\.[_a-zA-Z]\w*)+)|(?:%\\.+(?:\\.[_a-zA-Z]\w*)+)')
-
-base_function_pattern = re.compile('[_a-zA-Z]\w*\\([^()]*\\)')
-
-gear_patter = re.compile('(?:%(?!arg)[_a-zA-Z]\w*)|(?:%arg(?:\\.[_a-zA-Z]\w*)+)|(?:%\\.+(?:\\.[_a-zA-Z]\w*)+)|(?:[_a-zA-Z]\w*\\([^()]*\\))')
-
-
-def base_decode_abs_quote_str(arg: Cls, the_str: str):
-    search = re.search(quote_pattern_abs, the_str)
-    while search is not None:
-        quote_str = the_str[search.regs[0][0]:search.regs[0][1]]
-        pos_str = quote_str[1:]
-        quote_value = eval(pos_str)
-        the_str = the_str.replace(quote_str, quote_value, 1)
-        search = re.search(quote_pattern_abs, the_str)
-    return the_str
-
-
-def relative_quote_to_abs_quote(now_pos_str: str, relative_quote_str: str):
-    idx = re.search('[_a-zA-Z]', relative_quote_str).regs[0][0]
-    assert idx > 0, 'input is not a relative quote.'
-    abs_quote_str = re.sub('(?:\\.[_a-zA-Z]\w*){'+str(idx)+'}$', relative_quote_str[idx-1:], now_pos_str)
-    return abs_quote_str
+from gear_config.yaml_to_object import Cls
 
 
 
+class Decoder:
+    def __init__(self, arg: Cls, macros_dict=None):
+        self.arg = arg
 
+        macros_dict = dict()
+        macros_dict['%time'] = "time.strftime('%Y_%m_%d_%H_%M_%S', time.localtime(time.time()))"
+        macros_dict['%config_name'] = "os.path.basename(sys.argv[0])"
+        macros_dict['%user'] = "????????"
+        macros_dict['%project_dir'] = 'dirname(dirname(sys.argv[0]))'
+        if macros_dict is not None:
+            self.macros_dict = macros_dict
 
+        self.rel_quote_pattern = re.compile('(?:%\\.+(?:\\.[_a-zA-Z]\w*)+)')
+        self.abs_quote_pattern = re.compile('(?:%arg(?:\\.[_a-zA-Z]\w*)+)')
+        self.reserve_pattern = re.compile('(?:%(?!arg)[_a-zA-Z]\w*)')
+        self.reserve_or_abs_quote_pattern = re.compile('(?:%(?!arg)[_a-zA-Z]\w*)|(?:%arg(?:\\.[_a-zA-Z]\w*)+)')
+        self.quote_pattern = re.compile('(?:%arg(?:\\.[_a-zA-Z]\w*)+)|(?:%\\.+(?:\\.[_a-zA-Z]\w*)+)')
+        self.base_function_pattern = re.compile('(?:[_a-zA-Z]\w*\\([^()]*\\))')
+        self.function_or_quote_pattern = re.compile('(?:[_a-zA-Z]\w*\\([^()]*\\))|(?:%arg(?:\\.[_a-zA-Z]\w*)+)|(?:%\\.+(?:\\.[_a-zA-Z]\w*)+)')
+        self.gear_pattern = re.compile('(?:%(?!arg)[_a-zA-Z]\w*)|(?:%arg(?:\\.[_a-zA-Z]\w*)+)|(?:%\\.+(?:\\.[_a-zA-Z]\w*)+)|(?:[_a-zA-Z]\w*\\([^()]*\\))')
 
+        self.visit_list = list()
 
-gear_user_list = ['qxc', 'ysy', 'jh1', 'ys2', 'qty', 'zam', 'ca', 'xc']
-built_class = (bool, int, float, str, dict, list, None)
+    @staticmethod
+    def rel_quote_to_abs_quote(abs_pos_str: str, relative_quote_str: str):
+        idx = re.search('[_a-zA-Z]', relative_quote_str).regs[0][0]
+        assert idx > 0, 'input is not a relative quote.'
+        abs_quote_str = re.sub('(?:\\.[_a-zA-Z]\w*){' + str(idx) + '}$', relative_quote_str[idx - 1:], abs_pos_str)
+        return abs_quote_str
+
+    def decode_reserve_str(self, the_str: str):
+        for k, v in self.macros_dict.items():
+            the_str = re.sub(k, v, the_str)
+        return the_str
+
+    def base_decode_abs_quote_str(self, the_str: str):
+        search = re.search(self.abs_quote_pattern, the_str)
+        while search is not None:
+            quote_str = the_str[search.regs[0][0]:search.regs[0][1]]
+            pos_str = quote_str[1:]
+            quote_value = eval('self.'+pos_str)
+            the_str = the_str.replace(quote_str, quote_value, 1)
+            search = re.search(self.abs_quote_pattern, the_str)
+        return the_str
+
+    def decode(self, abs_pos_str: str, the_str: str):
+        if self.gear_pattern.search(the_str) is None:  # the_str does not have gear mode
+            return the_str
+
+        the_str = self.decode_reserve_str(the_str)
+
+        assert abs_pos_str not in self.visit_list, 'circular quote!'
+        self.visit_list.append(abs_pos_str)
+        the_str = self.rel_quote_to_abs_quote(abs_pos_str, the_str)
+
+        search = re.search(self.abs_quote_pattern, the_str)
+        while search is not None:
+            quote_str = the_str[search.regs[0][0]:search.regs[0][1]]
+            abs_pos_str = quote_str[1:]
+            str_quote_value = str(eval('self.'+abs_pos_str))
+            leaf_quote_value = self.decode(abs_pos_str, str_quote_value)
+            the_str = the_str.replace(quote_str, leaf_quote_value, 1)
+            exec('self.'+abs_pos_str+' = {}'.format(the_str))
+
+        self.visit_list.remove(abs_pos_str)
+        return the_str
+
 
 
 test_str = "join('test', join('wait', 'me')) + %{a} + %a.b + %{a.b.c} + %{a.b} + %a + %ccc.a + %TE + %_sd8 + " \
            "str(5) + str(2+3) + [] + [[a, b][]] + [[['str']]].shape  %arg.a.b %arg.c.dd %arg._.e arg   %" \
            "%.root   %...todo  %..td  %...todo.a.b  %..td.afdsaf.dcc  %arg  %time %user %config_name"
 
+if __name__ == '__main__':
+    from YOUR_CONFIG.default import ARG
 
-search = gear_patter.findall(test_str)
-for reg in search:
-    pass
-    # print(reg)
+    arg = ARG()
+
+    decoder = Decoder(arg)
+    ttttttttttt = decoder.decode('arg.a.c', '%.b')
+    print(ttttttttttt)
 
 
-test2_str = "%time %user %config_name"
-test2_str = base_decode_reserve_str(test2_str)
-print(test2_str)
 
-test3_str = "______________%arg.save.gear_save_root ________________"
-arg = get_Cls('YOUR_CONFIG/default.yaml')
 
-test3_str = base_decode_quote_str(arg, test3_str)
-print(test3_str)
+# search = gear_pattern.findall(test_str)
+# for reg in search:
+#     pass
+#
+# test2_str = "%time %user %config_name"
+# test2_str = base_decode_reserve_str(test2_str)
+# print(test2_str)
+#
+# test3_str = "______________%arg.save.gear_save_root ________________"
+# arg = get_Cls('YOUR_CONFIG/default.yaml')
+#
+# test3_str = base_decode_quote_str(arg, test3_str)
+# print(test3_str)
+
 
