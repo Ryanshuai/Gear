@@ -6,6 +6,9 @@ from gear_config.gear_cls_str_decoder import Decoder
 
 
 def write_down_obj(obj, tab_num):
+    function_str = '(?:[_a-zA-Z]\w*\\([$()]*\\))'
+    base_function_pattern = re.compile(function_str)
+
     attr_list = dir(obj)
     attr_list = list(filter(lambda x: not (x[:1] == '_' or callable(getattr(obj, x)) or x == ''), attr_list))
 
@@ -24,7 +27,8 @@ def write_down_obj(obj, tab_num):
             build_in_list.append(attr)
 
     for attr in build_in_list:
-        if isinstance(getattr(obj, attr), str):
+        context = getattr(obj, attr)
+        if isinstance(context, str) and base_function_pattern.search(context) is None:
             line = "{}self.{} = '{}'".format((tab_num+2)*'    ', attr, getattr(obj, attr)); lines.append(line)
         else:
             line = "{}self.{} = {}".format((tab_num+2)*'    ', attr, getattr(obj, attr)); lines.append(line)
