@@ -12,9 +12,9 @@ class ARG(Cls):
         class A(Cls):
             def __init__(self):
                 super().__init__()
-                self.b = '^time'
-                self.c = '^.b'
+                self.b = '$time'
+                self.c = '$.b'
                 self.d = 'test_stringggg'
-                self.e = None
+                self.e = '$'
                 self.gear_cls_tree_path = 'arg.a'
         self.a = A()

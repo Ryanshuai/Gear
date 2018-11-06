@@ -1,5 +1,5 @@
 a:
-  b: ^time
-  c: ^.b
+  b: $time
+  c: $.b
   d: test_stringggg
-  e:
+  e: $
