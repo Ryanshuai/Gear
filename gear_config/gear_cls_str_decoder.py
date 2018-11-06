@@ -34,7 +34,7 @@ base_function_pattern = re.compile('[_a-zA-Z]\w*\\([^()]*\\)')
 gear_patter = re.compile('(?:%(?!arg)[_a-zA-Z]\w*)|(?:%arg(?:\\.[_a-zA-Z]\w*)+)|(?:%\\.+(?:\\.[_a-zA-Z]\w*)+)|(?:[_a-zA-Z]\w*\\([^()]*\\))')
 
 
-def base_decode_quote_str(arg: Cls, the_str: str):  # TODO abs only now
+def base_decode_abs_quote_str(arg: Cls, the_str: str):
     search = re.search(quote_pattern_abs, the_str)
     while search is not None:
         quote_str = the_str[search.regs[0][0]:search.regs[0][1]]
@@ -43,6 +43,19 @@ def base_decode_quote_str(arg: Cls, the_str: str):  # TODO abs only now
         the_str = the_str.replace(quote_str, quote_value, 1)
         search = re.search(quote_pattern_abs, the_str)
     return the_str
+
+
+def relative_quote_to_abs_quote(now_pos_str: str, relative_quote_str: str):
+    idx = re.search('[_a-zA-Z]', relative_quote_str).regs[0][0]
+    assert idx > 0, 'input is not a relative quote.'
+    abs_quote_str = re.sub('(?:\\.[_a-zA-Z]\w*){'+str(idx)+'}$', relative_quote_str[idx-1:], now_pos_str)
+    return abs_quote_str
+
+
+
+
+
+
 
 gear_user_list = ['qxc', 'ysy', 'jh1', 'ys2', 'qty', 'zam', 'ca', 'xc']
 built_class = (bool, int, float, str, dict, list, None)
@@ -69,13 +82,3 @@ arg = get_Cls('YOUR_CONFIG/default.yaml')
 test3_str = base_decode_quote_str(arg, test3_str)
 print(test3_str)
 
-
-now_pos_str = 'a.b.c'
-relative_quote_str = '.d'
-
-def relative_quote_to_abs_quote(now_pos_str: str, relative_quote_str: str):
-    aaa = re.search('[_a-zA-Z]', relative_quote_str).regs[0][0]
-    point_num = relative_quote_str.count('.')
-    print()
-
-relative_quote_to_abs_quote(now_pos_str, relative_quote_str)
