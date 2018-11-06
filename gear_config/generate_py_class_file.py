@@ -62,8 +62,6 @@ for fpathe, dirs, fs in os.walk(cwd):
 yaml_file = yaml_wait_list[0]
 arg = get_Cls(yaml_file)
 
-py_file_path = yaml_file[:-5]+'.py'
-
 
 for yaml_file in yaml_wait_list:
     py_file_path = yaml_file[:-5]+'.py'

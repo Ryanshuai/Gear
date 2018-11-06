@@ -67,7 +67,7 @@ class Decoder:
             res = eval(the_str)
             return res
 
-    def decode(self, abs_pos_str: str, the_str: str):
+    def decode_str(self, abs_pos_str: str, the_str: str):
         if self.gear_pattern.search(the_str) is None:  # the_str does not have gear mode
             return the_str
 
@@ -82,8 +82,7 @@ class Decoder:
             abs_quote_str = the_str[search.regs[0][0]:search.regs[0][1]]
             search_abs_pos_str = abs_quote_str[1:]
             str_quote_value = str(eval('self.'+search_abs_pos_str))
-            leaf_quote_value = self.decode(search_abs_pos_str, str_quote_value)
-            print(leaf_quote_value)
+            leaf_quote_value = self.decode_str(search_abs_pos_str, str_quote_value)
             # leaf_quote_value = self.decode_function_in_str(leaf_quote_value)
             the_str = the_str.replace(abs_quote_str, leaf_quote_value, 1)
             search = re.search(self.abs_quote_pattern, the_str)
@@ -92,6 +91,15 @@ class Decoder:
         self.visit_list.remove(abs_pos_str)
         return the_str
 
+    def decode_arg(self, obj: Cls):
+        attr_list = dir(obj)
+        attr_list = list(filter(lambda x: not (x[:1] == '_' or callable(getattr(obj, x)) or x == ''), attr_list))
+        for attr in attr_list:
+            if isinstance(getattr(obj, attr), Cls):
+                self.decode_arg(getattr(obj, attr))
+            elif isinstance(getattr(obj, attr), str):
+                self.decode_str(obj.gear_cls_tree_path+'.'+attr, getattr(obj, attr))
+
 
 if __name__ == '__main__':
     from YOUR_CONFIG.default import ARG
@@ -99,41 +107,9 @@ if __name__ == '__main__':
     arg = ARG()
 
     decoder = Decoder(arg)
-    ttttttttttt = decoder.decode('arg.a.c', '$.b')
-    print(ttttttttttt)
+    # ttttttttttt = decoder.decode_str('arg.a.c', '$.b')
+    # print(ttttttttttt)
 
-    test_str = "join('test', join('wait', 'me')) + $a + $a.b + ${a.b.c} + ${a.b} + $a + $ccc.a + $TE + $_sd8 + " \
-               "str(5) + str(2+3) + [] + [[a, b][]] + [[['str']]].shape  $arg.a.b $arg.c.dd $arg._.e arg   $" \
-               "$.root   $...todo  $..td  $...todo.a.b  $..td.afdsaf.dcc  $arg  $time $user $config_name"
-
-    test_str = '$.b'
-
-    rel_quote_pattern = re.compile('(?:\\$\\.*(?:\\.[_a-zA-Z]\w*)+)')
-    abs_quote_pattern = re.compile('(?:\\$arg(?:\\.[_a-zA-Z]\w*)+)')
-    reserve_pattern = re.compile('(?:\\$(?!arg)[_a-zA-Z]\w*)')
-    reserve_or_abs_quote_pattern = re.compile('(?:\\$(?!arg)[_a-zA-Z]\w*)|(?:\\$arg(?:\\.[_a-zA-Z]\w*)+)')
-    quote_pattern = re.compile('(?:\\$arg(?:\\.[_a-zA-Z]\w*)+)|(?:\\$\\.+(?:\\.[_a-zA-Z]\w*)+)')
-    base_function_pattern = re.compile('(?:[_a-zA-Z]\w*\\([$()]*\\))')
-    function_or_quote_pattern = re.compile(
-        '(?:[_a-zA-Z]\w*\\([$()]*\\))|(?:\\$arg(?:\\.[_a-zA-Z]\w*)+)|(?:\\$\\.+(?:\\.[_a-zA-Z]\w*)+)')
-    gear_pattern = re.compile(
-        '(?:\\$(?!arg)[_a-zA-Z]\w*)|(?:\\$arg(?:\\.[_a-zA-Z]\w*)+)|(?:\\$\\.+(?:\\.[_a-zA-Z]\w*)+)|(?:[_a-zA-Z]\w*\\([$()]*\\))')
-
-    search = gear_pattern.search(test_str)
-
-    search = rel_quote_pattern.findall(test_str)
-    for reg in search:
-        pass
-        # print(reg)
-#
-# test2_str = "%time %user %config_name"
-# test2_str = base_decode_reserve_str(test2_str)
-# print(test2_str)
-#
-# test3_str = "______________%arg.save.gear_save_root ________________"
-# arg = get_Cls('YOUR_CONFIG/default.yaml')
-#
-# test3_str = base_decode_quote_str(arg, test3_str)
-# print(test3_str)
-
+    decoder.decode_arg(decoder.arg)
+    print()
 
