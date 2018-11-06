@@ -1,7 +1,8 @@
 import os
 import re
 
-from yaml_to_object import get_Cls, Cls
+from gear_config.yaml_to_object import get_Cls, Cls
+from gear_config.gear_cls_str_decoder import Decoder
 
 
 def write_down_obj(obj, tab_num):
@@ -13,18 +14,6 @@ def write_down_obj(obj, tab_num):
     line = "{}class {}(Cls):".format(tab_num*'    ', father_name.upper()); lines.append(line)
     line = "{}def __init__(self):".format((tab_num+1)*'    ', father_name.upper()); lines.append(line)
     line = "{}    super().__init__()".format((tab_num+1)*'    '); lines.append(line)
-
-    # if tab_num == 0:
-    #     line = 8*' '+"class STAMP(Cls):"; lines.append(line)
-    #     line = 8*' '+"    def __init__(self):"; lines.append(line)
-    #     line = 8*' '+"        super().__init__()"; lines.append(line)
-    #     line = 8*' '+"        self.config_name = config_name"; lines.append(line)
-    #     line = 8*' '+"        self.user = user"; lines.append(line)
-    #     line = 8*' '+"        if self.user == 'none':"; lines.append(line)
-    #     line = 8*' '+"            warnings.warn('gear warning: cannot find your user name, please insert in user list or specify it', DeprecationWarning)"; lines.append(line)
-    #     line = 8*' '+"        self.time = time"; lines.append(line)
-    #     line = 8*' '+"        self.experiment_name = experiment_name"; lines.append(line)
-    #     line = 8*' '+"self.stamp = STAMP()"; lines.append(line)
 
     cls_list = []
     build_in_list = []
@@ -55,18 +44,16 @@ for fpathe, dirs, fs in os.walk(cwd):
     for f in fs:
         if f[-5:] == '.yaml':
             yaml_file = os.path.join(fpathe, f)
-            ch_time = os.stat(yaml_file).st_mtime
+            # ch_time = os.stat(yaml_file).st_mtime
             yaml_wait_list.append(yaml_file)
 # print(yaml_wait_list)
-
-yaml_file = yaml_wait_list[0]
-arg = get_Cls(yaml_file)
 
 
 for yaml_file in yaml_wait_list:
     py_file_path = yaml_file[:-5]+'.py'
 
     arg = get_Cls(yaml_file)
+    arg = Decoder(arg).decode()
 
     lines = []
     line = 'import os'; lines.append(line)
@@ -74,18 +61,6 @@ for yaml_file in yaml_wait_list:
     line = 'import time'; lines.append(line)
     line = 'import warnings'; lines.append(line)
     line = 'from gear_config.yaml_to_object import Cls'; lines.append(line)
-    # line = ''; lines.append(line)
-    # line = ''; lines.append(line)
-    # line = "config_name = os.path.basename(sys.argv[0])"; lines.append(line)
-    # line = "user_list = list(filter(lambda user: os.path.exists('/root/' + user), user_list))"; lines.append(line)
-    # line = "if len(user_list) == 0:"; lines.append(line)
-    # line = "    user_list = list(filter(lambda user: os.path.exists('/home/' + user), user_list))"; lines.append(line)
-    # line = "if len(user_list) == 0:"; lines.append(line)
-    # line = "    user = 'none'"; lines.append(line)
-    # line = "else:"; lines.append(line)
-    # line = "    user = user_list[0]"; lines.append(line)
-    # line = "time = time.strftime('%Y_%m_%d_%H_%M_%S', time.localtime(time.time()))"; lines.append(line)
-    # line = "experiment_name = user + '-' + config_name + '-' + time"; lines.append(line)
     line = ""; lines.append(line)
     line = ""; lines.append(line)
 

@@ -12,8 +12,8 @@ class ARG(Cls):
         class A(Cls):
             def __init__(self):
                 super().__init__()
-                self.b = '$time'
-                self.c = '$.b'
+                self.b = 'time.strftime('%Y_%m_%d_%H_%M_%S', time.localtime(time.time()))'
+                self.c = 'time.strftime('%Y_%m_%d_%H_%M_%S', time.localtime(time.time()))'
                 self.d = 'test_stringggg'
                 self.e = '$'
                 self.gear_cls_tree_path = 'arg.a'

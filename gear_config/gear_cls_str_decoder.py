@@ -99,17 +99,22 @@ class Decoder:
                 self.decode_arg(getattr(obj, attr))
             elif isinstance(getattr(obj, attr), str):
                 self.decode_str(obj.gear_cls_tree_path+'.'+attr, getattr(obj, attr))
+        return obj
+
+    def decode(self):
+        return self.decode_arg(self.arg)
 
 
 if __name__ == '__main__':
-    from YOUR_CONFIG.default import ARG
+    from gear_config.yaml_to_object import get_Cls, Cls
 
-    arg = ARG()
+    yaml_file = '/home/ys/Desktop/github_gear/Gear/gear_config/YOUR_CONFIG/default.yaml'
+    # yaml_file = '/home/ys/Desktop/github_gear/Gear/gear_config/YOUR_CONFIG/specific.yaml'
+    arg = get_Cls(yaml_file)
 
-    decoder = Decoder(arg)
+    arg = Decoder(arg).decode()
     # ttttttttttt = decoder.decode_str('arg.a.c', '$.b')
     # print(ttttttttttt)
 
-    decoder.decode_arg(decoder.arg)
     print()
 
