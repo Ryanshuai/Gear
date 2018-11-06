@@ -2,34 +2,12 @@ import os
 import sys
 import time
 import warnings
-from ..yaml_to_object import Cls
-
-
-config_name = os.path.basename(sys.argv[0])
-user_list = list(filter(lambda user: os.path.exists('/root/' + user), user_list))
-if len(user_list) == 0:
-    user_list = list(filter(lambda user: os.path.exists('/home/' + user), user_list))
-if len(user_list) == 0:
-    user = 'none'
-else:
-    user = user_list[0]
-time = time.strftime('%Y_%m_%d_%H_%M_%S', time.localtime(time.time()))
-experiment_name = user + '-' + config_name + '-' + time
+from gear_config.yaml_to_object import Cls
 
 
 class ARG(Cls):
     def __init__(self):
         super().__init__()
-        class STAMP(Cls):
-            def __init__(self):
-                super().__init__()
-                self.config_name = config_name
-                self.user = user
-                if self.user == 'none':
-                    warnings.warn('gear warning: cannot find your user name, please insert in user list or specify it', DeprecationWarning)
-                self.time = time
-                self.experiment_name = experiment_name
-        self.stamp = STAMP()
         self.gear_cls_tree_path = 'arg'
         class DATA(Cls):
             def __init__(self):

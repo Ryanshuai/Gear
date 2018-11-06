@@ -1,6 +1,4 @@
 import yaml
-import os
-import time
 
 
 def input_parsing(inp):
